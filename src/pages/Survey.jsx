@@ -128,7 +128,7 @@ export default function Survey() {
             <option value="Εκπαίδευση">Εκπαίδευση</option>
             <option value="Πληροφορική">Πληροφορική</option>
             <option value="Διοίκηση">Διοίκηση</option>
-            <option value="Υγεία">Υγεία</option>
+            <option value="Κυβερνοασφάλεια">Κυβερνοασφάλεια</option>
             <option value="Άλλο">Άλλο</option>
           </select>
         </label>
