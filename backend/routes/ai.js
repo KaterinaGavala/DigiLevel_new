@@ -26,6 +26,127 @@ function makePlanKey(userId, domain, survey) {
     return userId + ":" + domain + ":invalid";
   }
 }
+const ALLOWED_DOMAIN_KEYS = [
+  "info-data",
+  "communication",
+  "content",
+  "safety",
+  "problem-solving",
+];
+
+// If the model returns English titles, map them to your keys
+const DOMAIN_TITLE_TO_KEY = {
+  "Information & Data Literacy": "info-data",
+  "Communication & Collaboration": "communication",
+  "Digital Content Creation": "content",
+  "Safety": "safety",
+  "Problem Solving": "problem-solving",
+  "Problem-Solving": "problem-solving",
+  "Problem solving": "problem-solving",
+};
+
+function normalizeDomain(domain) {
+  if (!domain || typeof domain !== "string") return null;
+
+  const d = domain.trim();
+
+  // Already a key?
+  if (ALLOWED_DOMAIN_KEYS.includes(d)) return d;
+
+  // English title?
+  if (DOMAIN_TITLE_TO_KEY[d]) return DOMAIN_TITLE_TO_KEY[d];
+
+  return null;
+}
+
+function fallbackFromSurvey(survey) {
+  const s = survey || {};
+
+  const profession = s.profession || "";
+  const workType = s.workType || "";
+  const experience = s.experience || "";
+  const freq = s.digitalFrequency || "";
+  const self = s.selfAssessment || "";
+  const tools = (s.mainTools || "").toLowerCase();
+
+  // Convert "1 - Αρχάριος" -> 1
+  const selfNum = (() => {
+    const m = String(self).match(/^(\d)\s*-/);
+    return m ? Number(m[1]) : null;
+  })();
+
+  // ------------------------------------------------
+  // 1️⃣ STRONG SIGNAL: PROFESSION (new options)
+  // ------------------------------------------------
+  if (profession === "Πληροφορική") return "problem-solving";
+  if (profession === "Κυβερνοασφάλεια") return "safety";
+  if (profession === "Διοίκηση") return "info-data";
+  if (profession === "Εκπαίδευση") return "content";
+
+  // ------------------------------------------------
+  // 2️⃣ WORK TYPE
+  // ------------------------------------------------
+  if (workType === "Φοιτητής") return "content";
+
+  // ------------------------------------------------
+  // 3️⃣ TOOLS (free text)
+  // ------------------------------------------------
+  if (
+    tools.includes("excel") ||
+    tools.includes("office") ||
+    tools.includes("sheets") ||
+    tools.includes("data")
+  ) {
+    return "info-data";
+  }
+
+  if (
+    tools.includes("teams") ||
+    tools.includes("zoom") ||
+    tools.includes("slack") ||
+    tools.includes("meet") ||
+    tools.includes("social")
+  ) {
+    return "communication";
+  }
+
+  if (
+    tools.includes("canva") ||
+    tools.includes("photoshop") ||
+    tools.includes("powerpoint") ||
+    tools.includes("video")
+  ) {
+    return "content";
+  }
+
+  if (
+    tools.includes("vpn") ||
+    tools.includes("antivirus") ||
+    tools.includes("firewall") ||
+    tools.includes("2fa")
+  ) {
+    return "safety";
+  }
+
+  // ------------------------------------------------
+  // 4️⃣ SKILL LEVEL & FREQUENCY
+  // ------------------------------------------------
+  if (freq === "Σπάνια") return "info-data";
+  if (selfNum !== null && selfNum <= 2) return "info-data";
+
+  if (selfNum === 3) return "communication";
+
+  if (selfNum !== null && selfNum >= 4) {
+    if (experience === ">10") return "problem-solving";
+    return "content";
+  }
+
+  // ------------------------------------------------
+  // 5️⃣ SAFE DEFAULT
+  // ------------------------------------------------
+  return "communication";
+}
+
 
 router.post("/recommend", auth, async (req, res) => {
   try {
@@ -69,8 +190,8 @@ router.post("/recommend", auth, async (req, res) => {
 Με βάση το DigComp (5 domains: Information & Data Literacy, Communication & Collaboration, Digital Content Creation, Safety, Problem Solving):
 1) Πρότεινε **ένα** domain για να ξεκινήσει ο χρήστης.
 2) Δώσε ΜΙΑ σύντομη αιτιολόγηση (1–2 προτάσεις).
-3) Το "domain" ΠΡΕΠΕΙ να είναι ΑΚΡΙΒΩΣ ένα από αυτά:
-   "Information & Data Literacy", "Communication & Collaboration", "Digital Content Creation", "Safety", "Problem Solving".
+3) Το "domain" ΠΡΕΠΕΙ να είναι ΑΚΡΙΒΩΣ ένα από αυτά (keys):
+   "info-data", "communication", "content", "safety", "problem-solving".
 
 ΠΡΟΣΟΧΗ – ΠΟΛΥ ΣΗΜΑΝΤΙΚΟ:
 - Θα απαντήσεις ΜΟΝΟ με έγκυρο JSON.
@@ -120,13 +241,18 @@ if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
         console.warn("JSON parse error in /ai/recommend:", e.message);
       }
     }
-if (!parsed || typeof parsed.domain !== "string" || typeof parsed.reason !== "string") {
+const normalized = normalizeDomain(parsed?.domain);
+
+if (!parsed || !normalized || typeof parsed.reason !== "string") {
+  const fallbackKey = fallbackFromSurvey(survey);
   parsed = {
-    domain: "Information & Data Literacy",
+    domain: fallbackKey,
     reason:
-      "Δεν κατέστη δυνατή η εξαγωγή δομημένης πρότασης. Ξεκίνα με βασικές δεξιότητες αναζήτησης και αξιολόγησης πληροφοριών.",
+      "Η επιλογή έγινε με βάση το ερωτηματολόγιο του χρήστη.",
   };
-    }
+} else {
+  parsed.domain = normalized;
+}
     // -----------------------------------------
 
     // ---------- SAVE TO CACHE ----------

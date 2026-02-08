@@ -37,10 +37,10 @@ export default function QuizSelection() {
         setRec(res.data.recommendation);
       } catch (e) {
         // fallback if AI not available
-        setRec({
-          domain: "Information & Data Literacy",
-          reason: "Ξεκίνα με βασικές δεξιότητες αναζήτησης και αξιολόγησης πληροφοριών."
-        });
+       setRec({
+  domain: "info-data",
+  reason: "Ξεκίνα με βασικές δεξιότητες αναζήτησης και αξιολόγησης πληροφοριών."
+});
       } finally {
         setLoading(false);
       }
@@ -133,13 +133,21 @@ export default function QuizSelection() {
     );
 }
 
-function translateDomain(englishName = "") {
+function translateDomain(domain = "") {
   const map = {
-    "Information & Data Literacy": "Πληροφορίες & Γραμματισμός Δεδομένων",
+    "info-data": "Πληροφορίες & Δεδομένα",
+    "communication": "Επικοινωνία & Συνεργασία",
+    "content": "Δημιουργία Ψηφιακού Περιεχομένου",
+    "safety": "Ασφάλεια",
+    "problem-solving": "Επίλυση Προβλημάτων",
+
+    // (optional) keep these for backward compatibility
+    "Information & Data Literacy": "Πληροφορίες & Δεδομένα",
     "Communication & Collaboration": "Επικοινωνία & Συνεργασία",
     "Digital Content Creation": "Δημιουργία Ψηφιακού Περιεχομένου",
     "Safety": "Ασφάλεια",
     "Problem Solving": "Επίλυση Προβλημάτων",
   };
-  return map[englishName] || englishName;
+
+  return map[domain] || domain;
 }
