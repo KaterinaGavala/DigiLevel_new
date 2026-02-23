@@ -102,15 +102,15 @@ export default function Quiz() {
             ? "✅ Σωστή απάντηση!"
             : "❌ Λάθος απάντηση, προχωράμε στην επόμενη."
         );
-      } else {
-        setFeedback(null);
-      }
-      // Update next question and progress
+      } setTimeout(() => {
       setQuestion(res.data.nextQuestion);
       setProgress(res.data.progress);
       setLevel(res.data.currentLevel);
       setChoice("");
-    } catch (err) {
+      setFeedback(null); // καθάρισε feedback για την επόμενη
+    }, 1200);
+      }
+     catch (err) {
       console.error(err);
       setBanner(err.response?.data?.message || "Σφάλμα απάντησης");
     } finally {

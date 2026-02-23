@@ -49,6 +49,7 @@ router.post("/start", auth, async (req, res) => {
       // νέα πεδία για AI-based ροή
       plan: usePlan ? plan : null,
       currentStep: 0, // index στο plan (0 = πρώτη ερώτηση)
+      asked: [question[0]._id],
     };
 
     res.json({ sessionId: sid, question: question[0] });
@@ -147,15 +148,33 @@ router.post("/:sid/answer", auth, async (req, res) => {
     }
 
     // --------------------------------------
-    // NEXT QUESTION
-    // --------------------------------------
-    const nextQ = await Question.aggregate([
-      { $match: { domain: session.domain, level: session.currentLevel } },
-      { $sample: { size: 1 } },
-    ]);
+// NEXT QUESTION (avoid duplicates)
+// --------------------------------------
+const asked = session.asked || [];
 
-    if (!nextQ.length)
-      return res.status(404).json({ message: "No next question found" });
+let nextQ = await Question.aggregate([
+  {
+    $match: {
+      domain: session.domain,
+      level: session.currentLevel,
+      _id: { $nin: asked },
+    },
+  },
+  { $sample: { size: 1 } },
+]);
+
+// fallback: αν δεν υπάρχει άλλη αδιάθετη ερώτηση στο ίδιο level
+if (!nextQ.length) {
+  nextQ = await Question.aggregate([
+    { $match: { domain: session.domain, level: session.currentLevel } },
+    { $sample: { size: 1 } },
+  ]);
+}
+
+if (!nextQ.length) return res.status(404).json({ message: "No next question found" });
+
+// καταγραφή ότι αυτή η ερώτηση εμφανίστηκε
+session.asked = [...asked, nextQ[0]._id];
 
     res.json({
       finished: false,
