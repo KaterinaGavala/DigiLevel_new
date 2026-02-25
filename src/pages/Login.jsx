@@ -6,7 +6,7 @@ export default function Login() {
   const [isSignup, setIsSignup] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [message, setMessage] = useState("");
-  const navigate = useNavigate(); // 👈 hook for navigation
+  const navigate = useNavigate(); 
 
   const toggle = () => {
     setIsSignup(!isSignup);

@@ -21,7 +21,7 @@ export default function Survey() {
 
   const [message, setMessage] = useState("");
 
-  // 🧠 Prefill if user already has data (from localStorage)
+  // Prefill if user already has data (from localStorage)
   useEffect(() => {
     const savedUser = JSON.parse(localStorage.getItem("user"));
       if (!isEdit && savedUser?.survey && Object.keys(savedUser.survey).length > 0) {

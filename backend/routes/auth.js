@@ -51,14 +51,14 @@ router.post("/login", async (req, res) => {
 
     const token = signToken(user);
 
-    // ✅ include full survey object in the response
+    
     res.json({
       token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        survey: user.survey || {}, // 👈 this is the key addition
+        survey: user.survey || {},
       },
     });
   } catch (err) {

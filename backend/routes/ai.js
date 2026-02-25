@@ -7,7 +7,7 @@ const auth = require("../middleware/auth");
 const recCache = new Map(); // key -> { recommendation, raw, ts }
 
 /**
- * Δημιουργεί ένα σταθερό key με βάση userId + survey
+ * σταθερό key με βάση userId + survey
  */
 function makeKey(userId, survey) {
   try {
@@ -34,7 +34,7 @@ const ALLOWED_DOMAIN_KEYS = [
   "problem-solving",
 ];
 
-// If the model returns English titles, map them to your keys
+
 const DOMAIN_TITLE_TO_KEY = {
   "Information & Data Literacy": "info-data",
   "Communication & Collaboration": "communication",
@@ -50,10 +50,10 @@ function normalizeDomain(domain) {
 
   const d = domain.trim();
 
-  // Already a key?
+  
   if (ALLOWED_DOMAIN_KEYS.includes(d)) return d;
 
-  // English title?
+  
   if (DOMAIN_TITLE_TO_KEY[d]) return DOMAIN_TITLE_TO_KEY[d];
 
   return null;
@@ -76,7 +76,7 @@ function fallbackFromSurvey(survey) {
   })();
 
   // ------------------------------------------------
-  // 1️⃣ STRONG SIGNAL: PROFESSION (new options)
+  // PROFESSION
   // ------------------------------------------------
   if (profession === "Πληροφορική") return "problem-solving";
   if (profession === "Κυβερνοασφάλεια") return "safety";
@@ -84,12 +84,12 @@ function fallbackFromSurvey(survey) {
   if (profession === "Εκπαίδευση") return "content";
 
   // ------------------------------------------------
-  // 2️⃣ WORK TYPE
+  // WORK TYPE
   // ------------------------------------------------
   if (workType === "Φοιτητής") return "content";
 
   // ------------------------------------------------
-  // 3️⃣ TOOLS (free text)
+  // TOOLS 
   // ------------------------------------------------
   if (
     tools.includes("excel") ||
@@ -129,7 +129,7 @@ function fallbackFromSurvey(survey) {
   }
 
   // ------------------------------------------------
-  // 4️⃣ SKILL LEVEL & FREQUENCY
+  // SKILL LEVEL & FREQUENCY
   // ------------------------------------------------
   if (freq === "Σπάνια") return "info-data";
   if (selfNum !== null && selfNum <= 2) return "info-data";
@@ -142,7 +142,7 @@ function fallbackFromSurvey(survey) {
   }
 
   // ------------------------------------------------
-  // 5️⃣ SAFE DEFAULT
+  // SAFE DEFAULT
   // ------------------------------------------------
   return "communication";
 }
@@ -175,7 +175,7 @@ router.post("/recommend", auth, async (req, res) => {
     }
     // --------------------------------------- //
 
-    // ----------- AI CALL (as is) ------------
+    // ----------- AI CALL ------------
     const prompt = `
 Δεδομένα χρήστη:
 - Εκπαίδευση: ${survey.education || "-"}
@@ -369,7 +369,7 @@ ${domainLabel}
         stream: false,
           options: {
     temperature: 0,
-    num_predict: 400    // ⬅ χρειάζεσαι λίγη παραπάνω “ανάσα” για τα 10 steps
+    num_predict: 400    
   }
       }),
     });

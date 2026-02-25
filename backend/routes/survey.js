@@ -5,7 +5,7 @@ const auth = require("../middleware/auth");
 // POST /survey
 router.post("/", auth, async (req, res) => {
   try {
-    // get all possible survey fields from body
+    
     const {
       education,
       profession,
@@ -17,7 +17,7 @@ router.post("/", auth, async (req, res) => {
       mainTools,
     } = req.body;
 
-    // update the survey field for the current user
+    
     const user = await User.findByIdAndUpdate(
       req.user.uid,
       {
