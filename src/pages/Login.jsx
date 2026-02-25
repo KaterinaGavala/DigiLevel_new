@@ -36,7 +36,7 @@ export default function Login() {
       setMessage("✅ Success!");
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
-      // ------------- AI Warm Up ------------- //
+      
 try {
   await axios.post(
     "http://localhost:5000/ai/warmup",
@@ -48,10 +48,10 @@ try {
 }
 
 
-      // 👇 redirect after login/signup
+      // redirect after login/signup
     const survey = res.data.user.survey;
     if (survey && Object.keys(survey).length > 0) {
-      // user already has survey -> skip to quiz or dashboard
+      // user already has survey -> skip to dashboard
       navigate("/results");
     } else {
       // new user -> go fill survey
@@ -82,7 +82,7 @@ try {
         <img src="/DigiLevel_.png" alt="DigiLevel Logo" style={{ width: 120, marginBottom: 20 }} />
         <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>DigiLevel</h1>
         <p style={{ maxWidth: 300, textAlign: "center", marginTop: 10 }}>
-          Adaptive quiz system for digital skills assessment (DigComp-based)
+          Ανακάλυψε το επίπεδο των ψηφιακών σου δεξιοτήτων μέσα από μια σύγχρονη και προσαρμοστική εμπειρία αξιολόγησης.
         </p>
       </div>
 
